@@ -112,6 +112,16 @@ const nextConfig: NextConfig = {
   ],
 
   /**
+   * Public sign-up is closed (fork policy — disabled in Supabase Auth
+   * too). Teammates get a Supabase user from an admin plus a CRM
+   * invitation, then sign in. Query strings pass through, so
+   * `/signup?invite=<token>` lands on `/login?invite=<token>`.
+   */
+  async redirects() {
+    return [{ source: "/signup", destination: "/login", permanent: false }];
+  },
+
+  /**
    * Cache-Control policy.
    *
    * Why this exists:

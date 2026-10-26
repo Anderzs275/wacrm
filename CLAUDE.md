@@ -20,6 +20,13 @@ which comes from upstream) so upstream merges stay conflict-free.
   `ENCRYPTION_KEY` must be identical in both `.env.local` files, otherwise
   stored WhatsApp tokens cannot be decrypted.
 - Meta webhooks only reach production; inbound messages never arrive locally.
+- **Public sign-up is disabled** in Supabase (Authentication → Sign In /
+  Providers → "Allow new users to sign up" off). In the app, `/signup`
+  redirects to `/login` (`redirects()` in `next.config.ts`) and the login and
+  `/join/<token>` pages offer only "Sign in".
+  To add a teammate: Supabase → Authentication → Users → Add user (auto
+  confirm), then send a CRM invitation (Settings → Team); they open the link
+  and use **Sign in**, not Create account.
 
 ## Deploy
 
@@ -32,8 +39,11 @@ needs a rebuild, not just a restart.
 
 ## Database changes
 
-- Schema lives in `supabase/migrations/NNN_*.sql`. Upstream is at `053`;
-  new fork migrations start at `054` and never reuse an existing number.
+- Schema lives in `supabase/migrations/NNN_*.sql`. Upstream numbers are
+  sparse (up to `059` so far, with gaps it may fill later), so fork
+  migrations use their own range starting at `100` and never reuse a number.
+  When an upstream merge brings a migration numbered below the fork's latest,
+  apply it with `npx supabase db push --include-all`.
 - Apply with the Supabase CLI: `npx supabase link --project-ref <ref>` once,
   then `npx supabase db push`.
 - Never edit an already-applied migration; add a new one.
@@ -59,8 +69,9 @@ An older working copy at `E:\Trabajos\crm\wacrm` (based on upstream
 ported here: `src/app/(dashboard)/{tracking,orders}`, `src/app/api/{tracking,shopify}`,
 `src/lib/{tracking,shopify}`, `src/components/orders`, settings sections,
 role/permission changes, `pdfjs-dist`, and catalogue strings. Its migrations
-are numbered `043`–`046`, which collide with upstream — renumber to `054+`
-when porting. Port by re-applying the changes onto current code, not by
+are numbered `043`–`046`, which collide with upstream — renumber into the
+fork's `100+` range when porting. None of them has been applied to the
+Supabase project yet (checked 2026-10-26). Port by re-applying the changes onto current code, not by
 copying files over (that would revert upstream fixes).
 
 ## Upstream updates
