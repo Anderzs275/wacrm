@@ -30,9 +30,14 @@ which comes from upstream) so upstream merges stay conflict-free.
 
 ## Deploy
 
-1. Before pushing: `npm run lint`, `npm run typecheck`, `npm test`.
-2. Push to `main` on GitHub.
-3. On the server: `/var/www/deploy.sh` (git pull, npm ci, build, pm2 restart).
+Work happens on feature branches (`feat/...`); `main` is what production runs.
+
+1. Before merging: `npm run lint`, `npm run typecheck`, `npm test`.
+2. Merge the branch into `main` and push `main` to GitHub.
+3. If the change adds a migration, apply it to Supabase (see below) before
+   deploying the code that uses it.
+4. On the server: `/var/www/deploy.sh` (git pull, npm ci, build,
+   `pm2 restart all`).
 
 `NEXT_PUBLIC_*` vars are inlined at build time — changing one on the server
 needs a rebuild, not just a restart.
@@ -62,17 +67,32 @@ needs a rebuild, not just a restart.
 New top-level dashboard routes must also be added to `protectedPaths` in
 `src/middleware.ts` (`middleware.test.ts` enforces this).
 
-## Pending port: tracking / Shopify
+## Fork features
 
-An older working copy at `E:\Trabajos\crm\wacrm` (based on upstream
-`45e80ad`, uncommitted) contains a tracking + Shopify orders feature not yet
-ported here: `src/app/(dashboard)/{tracking,orders}`, `src/app/api/{tracking,shopify}`,
-`src/lib/{tracking,shopify}`, `src/components/orders`, settings sections,
-role/permission changes, `pdfjs-dist`, and catalogue strings. Its migrations
-are numbered `043`–`046`, which collide with upstream — renumber into the
-fork's `100+` range when porting. None of them has been applied to the
-Supabase project yet (checked 2026-10-26). Port by re-applying the changes onto current code, not by
-copying files over (that would revert upstream fixes).
+**Olva tracking ("Envíos", `/tracking`)** — upload an Olva Courier label PDF
+(read in the browser with `pdfjs-dist`, never uploaded), review the parsed
+rows, send each customer an approved two-variable WhatsApp template
+(`{{1}}` first name, `{{2}}` tracking number without the `-YY` year, since
+Olva's tracker at tracking.olvaexpress.pe takes the year separately). An
+optional COPY_CODE button gets the same number per row
+(`src/lib/tracking/tracking-code.ts`). Code: `src/lib/tracking/`,
+`src/app/(dashboard)/tracking/`, `src/app/api/tracking/send/`; schema:
+`supabase/migrations/100_tracking_shipments.sql`. Delete is admin-only
+(`canPurgeData` / `useCan('purge-data')`).
+
+Migration 100 also redefines `redeem_invitation` so accepting an invite
+refuses to delete an old account holding `tracking_shipments` rows. Any new
+account-scoped table needs the same treatment
+(`redeem-invitation-migration.test.ts` enforces it), and if an upstream
+migration redefines `redeem_invitation`, re-add the fork's tables in a new
+fork migration.
+
+**Not ported:** the Shopify orders integration in the older working copy at
+`E:\Trabajos\crm\wacrm` (based on upstream `45e80ad`, uncommitted):
+`src/app/(dashboard)/orders`, `src/app/api/shopify`, `src/lib/shopify`,
+`src/components/orders`, Shopify settings, and its migrations `044`–`046`
+(renumber into `100+` if ever ported). Port by re-applying onto current
+code, not by copying files over (that would revert upstream fixes).
 
 ## Upstream updates
 

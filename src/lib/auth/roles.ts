@@ -98,6 +98,21 @@ export function canViewOnly(role: AccountRole): boolean {
   return role === "viewer";
 }
 
+/**
+ * Owner / admin: permanently delete operational rows rather than
+ * marking them resolved — emptying the tracking list so a batch can
+ * be re-imported from scratch, and similar housekeeping.
+ *
+ * Deliberately above `canSendMessages`: an agent can discard a row
+ * (a tombstone that survives the next import) but only an admin can
+ * remove the tombstone itself, which is what makes a re-upload
+ * re-create the row as pending. Mirrors the admin+ DELETE policies
+ * in the schema.
+ */
+export function canPurgeData(role: AccountRole): boolean {
+  return hasMinRole(role, "admin");
+}
+
 /** Owner only: irreversible destructive operations. */
 export function canDeleteAccount(role: AccountRole): boolean {
   return role === "owner";

@@ -425,7 +425,7 @@ export function MembersTab() {
                         }
                       >
                         <SelectTrigger
-                          className="w-32 bg-muted border-border text-foreground"
+                          className="w-40 bg-muted border-border text-foreground"
                           disabled={isBusy}
                         >
                           <SelectValue>{tRoles(member.role)}</SelectValue>
