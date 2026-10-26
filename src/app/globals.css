@@ -4,6 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Light-mode counterpart. This app flips modes with `data-mode` on
+   <html> (see the token blocks below and src/lib/themes.ts), not with
+   a `.dark` class, so `light:` is how a utility targets light mode. */
+@custom-variant light (&:is(html[data-mode="light"] *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -18,6 +23,12 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  /* Axis ticks and gridline labels. A token of its own rather than
+   * --muted-foreground: chart labels are the smallest text on the
+   * dashboard (10-12px) and sit on --card, so they need more contrast
+   * than body-level muted text, and raising --muted-foreground to
+   * suit them would wash out every secondary label in the app. */
+  --color-chart-axis: var(--chart-axis);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -66,7 +77,7 @@
  *
  *   1. MODE   (light / dark)  → neutral surfaces. Selected with
  *      `document.documentElement.dataset.mode`. Defaults to dark.
- *   2. ACCENT (violet / …)    → the primary color only. Selected
+ *   2. ACCENT (ocean / …)     → the primary color only. Selected
  *      with `document.documentElement.dataset.theme`.
  *
  * The two compose: any accent works in either mode. Neutral
@@ -76,7 +87,7 @@
  * --sidebar-ring) live in the ACCENT blocks. They set disjoint
  * variables, so cascade order between them doesn't matter.
  *
- * `:root` carries the dark-mode + violet defaults so a visitor
+ * `:root` carries the dark-mode + ocean defaults so a visitor
  * renders correctly before JS runs; the boot script in
  * layout.tsx replays the saved mode + accent before first paint.
  *
@@ -103,6 +114,7 @@ html[data-mode="dark"] {
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.22 0.01 260);
   --muted-foreground: oklch(0.65 0.01 260);
+  --chart-axis: oklch(0.82 0.01 260);
   --accent: oklch(0.22 0.01 260);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.577 0.245 27.325);
@@ -136,6 +148,7 @@ html[data-mode="light"] {
   --secondary-foreground: oklch(0.25 0.01 260);
   --muted: oklch(0.967 0.003 260);
   --muted-foreground: oklch(0.52 0.015 260);
+  --chart-axis: oklch(0.42 0.015 260);
   --accent: oklch(0.96 0.004 260);
   --accent-foreground: oklch(0.25 0.01 260);
   --destructive: oklch(0.577 0.245 27.325);
@@ -159,18 +172,21 @@ html[data-mode="light"] {
 
 /* ---- ACCENT: primary color ---- */
 
+/* Ocean is the brand accent: #1378aa, the blue of the Unno wordmark.
+   oklch(0.544 0.114 237.3) is that hex converted; it clears 4.89:1
+   against white, so --primary-foreground stays white. */
 :root,
-html[data-theme="violet"] {
-  --primary: oklch(0.526 0.247 293);
+html[data-theme="ocean"] {
+  --primary: oklch(0.544 0.114 237.3);
   --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: oklch(0.6 0.22 293);
-  --primary-soft: oklch(0.526 0.247 293 / 0.12);
-  --primary-soft-2: oklch(0.526 0.247 293 / 0.2);
-  --ring: oklch(0.526 0.247 293);
-  --chart-1: oklch(0.526 0.247 293);
-  --sidebar-primary: oklch(0.526 0.247 293);
+  --primary-hover: oklch(0.615 0.105 237.3);
+  --primary-soft: oklch(0.544 0.114 237.3 / 0.12);
+  --primary-soft-2: oklch(0.544 0.114 237.3 / 0.2);
+  --ring: oklch(0.544 0.114 237.3);
+  --chart-1: oklch(0.544 0.114 237.3);
+  --sidebar-primary: oklch(0.544 0.114 237.3);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-ring: oklch(0.526 0.247 293);
+  --sidebar-ring: oklch(0.544 0.114 237.3);
 }
 
 html[data-theme="emerald"] {
@@ -187,18 +203,17 @@ html[data-theme="emerald"] {
   --sidebar-ring: oklch(0.62 0.16 162);
 }
 
-html[data-theme="cobalt"] {
-  --primary: oklch(0.585 0.2 254);
+html[data-theme="violet"] {
+  --primary: oklch(0.526 0.247 293);
   --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: oklch(0.66 0.18 254);
-  --primary-soft: oklch(0.585 0.2 254 / 0.12);
-  --primary-soft-2: oklch(0.585 0.2 254 / 0.22);
-  --ring: oklch(0.585 0.2 254);
-  --chart-1: oklch(0.585 0.2 254);
-  --chart-2: oklch(0.7 0.15 220);
-  --sidebar-primary: oklch(0.585 0.2 254);
+  --primary-hover: oklch(0.6 0.22 293);
+  --primary-soft: oklch(0.526 0.247 293 / 0.12);
+  --primary-soft-2: oklch(0.526 0.247 293 / 0.2);
+  --ring: oklch(0.526 0.247 293);
+  --chart-1: oklch(0.526 0.247 293);
+  --sidebar-primary: oklch(0.526 0.247 293);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-ring: oklch(0.585 0.2 254);
+  --sidebar-ring: oklch(0.526 0.247 293);
 }
 
 html[data-theme="amber"] {

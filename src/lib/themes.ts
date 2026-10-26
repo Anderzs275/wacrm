@@ -8,22 +8,24 @@
  *
  * Adding a new theme is a two-step change:
  *   1. Append the new `html[data-theme="<id>"]` block in globals.css
- *      with every token from an existing theme (use violet as the
+ *      with every token from an existing theme (use ocean as the
  *      shape reference).
  *   2. Add an entry below. The order here drives the picker grid.
  */
 
 export const THEME_IDS = [
-  "violet",
+  "ocean",
   "emerald",
-  "cobalt",
+  "violet",
   "amber",
   "rose",
 ] as const;
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
-export const DEFAULT_THEME: ThemeId = "violet";
+// Ocean — the Unno brand blue. Anyone whose localStorage still holds
+// the retired "cobalt" id fails isThemeId() and lands here instead.
+export const DEFAULT_THEME: ThemeId = "ocean";
 
 export const STORAGE_KEY = "wacrm.theme";
 
@@ -68,10 +70,10 @@ export interface ThemeMeta {
 
 export const THEMES: ReadonlyArray<ThemeMeta> = [
   {
-    id: "violet",
-    name: "Violet",
-    tagline: "The default — confident, slightly playful.",
-    swatch: "oklch(0.526 0.247 293)",
+    id: "ocean",
+    name: "Ocean",
+    tagline: "The default — the blue of the Unno wordmark.",
+    swatch: "oklch(0.544 0.114 237.3)",
   },
   {
     id: "emerald",
@@ -80,10 +82,10 @@ export const THEMES: ReadonlyArray<ThemeMeta> = [
     swatch: "oklch(0.62 0.16 162)",
   },
   {
-    id: "cobalt",
-    name: "Cobalt",
-    tagline: "Clean B2B-SaaS blue — calm and product-y.",
-    swatch: "oklch(0.585 0.2 254)",
+    id: "violet",
+    name: "Violet",
+    tagline: "Confident and slightly playful — the old default.",
+    swatch: "oklch(0.526 0.247 293)",
   },
   {
     id: "amber",

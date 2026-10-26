@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -184,22 +185,32 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         )}
         aria-label={t("primaryNav")}
       >
-        {/* Logo row. On mobile we put a close button here; on desktop the
-            close button is hidden since the sidebar is always-visible. */}
-        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <MessageSquare className="h-4 w-4" />
-            </div>
-            <span className="text-sm font-semibold text-foreground">
-              {t("title")}
-            </span>
+        {/* Logo row. The wordmark is centred across the full width; the
+            mobile close button is positioned absolutely so it does not
+            take part in the centring. On desktop that button is hidden
+            since the sidebar is always-visible. */}
+        <div className="relative flex h-14 shrink-0 items-center justify-center border-b border-border px-4">
+          <Link href="/dashboard" className="flex items-center">
+            {/* The wordmark ships as white-only art on transparency, so it
+                is invisible against the light theme's white sidebar.
+                `light:invert` (custom variant in globals.css) flips the
+                pure white to black in light mode and leaves it alone in
+                dark. Swap this for a paired light/dark file if the brand
+                ever ships a coloured mark. */}
+            <Image
+              src="/logo.avif"
+              alt={t("title")}
+              width={400}
+              height={118}
+              priority
+              className="h-7 w-auto light:invert"
+            />
           </Link>
           <button
             type="button"
             onClick={onClose}
             aria-label={t("closeMenu")}
-            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+            className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
           >
             <X className="h-5 w-5" />
           </button>
