@@ -13,7 +13,7 @@ which comes from upstream) so upstream merges stay conflict-free.
   `NEXT_PUBLIC_SITE_URL=http://localhost:3000` and
   `WHATSAPP_TEMPLATES_DRY_RUN=true`.
 - **Production:** Hostinger VPS (Ubuntu, Node 22, PM2, Nginx) at
-  `/var/www/wacrm`, domain `crm.underwearsociety.com` (DNS on BanaHosting,
+  `/var/www/wacrm`, domain `crm.theunderwearsociety.com` (DNS on BanaHosting,
   TLS via certbot).
 - **Database:** one hosted Supabase project, shared by local and prod unless
   a separate dev project is set up. Local work touches real data.
