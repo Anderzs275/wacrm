@@ -2496,7 +2496,8 @@
     "NGN": "Naira nigeriana",
     "SGD": "Dólar de Singapur",
     "MXN": "Peso mexicano",
-    "COP": "Peso colombiano"
+    "COP": "Peso colombiano",
+    "PEN": "Sol peruano"
   },
   "TemplateStatus": {
     "DRAFT": "Borrador",
