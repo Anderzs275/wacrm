@@ -190,7 +190,7 @@ export function MessageThread({
   const tTimer = useTranslations("Inbox.sessionTimer");
   const tQuote = useTranslations("Inbox.replyQuote");
 
-  const { user } = useAuth();
+  const { user, canManageMembers } = useAuth();
   const { getPresence, getRow, now } = usePresence();
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -1149,7 +1149,8 @@ export function MessageThread({
                         label={presenceLabel(
                           presence,
                           getRow(p.user_id)?.last_seen_at ?? null,
-                          now
+                          now,
+                          canManageMembers
                         )}
                         className="mr-2"
                       />

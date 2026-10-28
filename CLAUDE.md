@@ -87,6 +87,60 @@ account-scoped table needs the same treatment
 migration redefines `redeem_invitation`, re-add the fork's tables in a new
 fork migration.
 
+**Equipo (`/team`)** — internal team page (roadmap next: CSV import of
+the marketing Excel, admin activity log, AI "what's planned today").
+Shows a strip with today's next meeting, the content calendar, who is
+connected (reuses `member_presence`) and team labels (admin-only).
+Meetings live on the calendar as (repeating) `calendar_events`; the
+`team_meetings` table from 101 is no longer used by the UI.
+**Last-connection time is admin-only** everywhere: `presenceLabel(...,
+showLastSeen)` hides it in the Members tab and inbox assign menu too.
+This is a UI rule — RLS still lets members read `last_seen_at`, since
+the dot is derived from it. Code: `src/components/team/`,
+`src/lib/team/`, `src/app/(dashboard)/team/`; schema:
+`supabase/migrations/101_team_space.sql`.
+
+**Content calendar (on `/team`)** — replaces the marketing team's monthly
+Excel: one `content_posts` row per planned post (date, category, brand,
+format, product, idea, caption, status) plus `content_post_assignees`.
+Category/format/status are closed lists (CHECK in migration 104 +
+`src/lib/calendar/content-meta.ts`, change both); brands are a managed
+list (`content_brands`, admin adds them inline in the post form; seeded
+only into multi-member accounts so solo accounts stay mergeable).
+`calendar_events` holds dated meetings (day + Lima time + link) and the
+team's own key dates; one row per series, `repeat` weekly / biweekly /
+weekdays until `repeat_until` (105), expanded in the app by
+`src/lib/calendar/recurrence.ts` — editing edits the whole series. A
+key date can instead span days (`end_date`, never with a repeat) and
+have `priority` normal/high (106); spans draw as one bar. Peruvian holidays and retail dates are computed,
+not stored (`src/lib/calendar/peru-dates.ts`; update it if the feriado
+law changes). The `team` role can create and edit posts and events;
+deleting a post is admin+, an event its creator or an admin. Code: `src/components/calendar/`, `src/lib/calendar/`; schema:
+`supabase/migrations/104_content_calendar.sql`.
+
+**Equipo tabs** — `/team` has three tabs: Calendario (month / list /
+Trello-style board of posts), Colecciones (`collections` +
+`collection_tasks` checklist, board by stage) and Colaboraciones
+(`collaborations`, influencer deals with PEN amounts, board by
+status), all migration 108. Stages/statuses are closed lists (CHECK +
+`src/lib/team/work-meta.ts`). Launch and collab-publish dates show on
+the calendar as milestones. The three boards share
+`src/components/kanban/kanban-board.tsx` (same @dnd-kit setup as the
+deals board). `team` role may create/edit; delete is admin+.
+
+**Role `team` ("Equipo")** — for designers: only `/team` and personal
+settings (profile, security, appearance), no customer data. Rank 0,
+below viewer. Contained in three layers: RLS (`is_account_member` maps
+it to 0 and every existing policy keeps the default min `viewer`;
+`103_team_role_access.sql` opens only accounts, profiles, presence and
+the team tables via `is_account_member(..., 'team')`),
+`getCurrentAccount()` refusing it unless a route passes
+`{ allowTeamRole: true }` (only `GET /api/account/members` does), and
+the UI (`src/lib/team/team-role.ts`: sidebar filter, shell redirect,
+settings rail). A new screen for this role needs all three. Migration
+102 only adds the enum value and must be run before 103 (Postgres can't
+use a new enum value in the same transaction).
+
 **Not ported:** the Shopify orders integration in the older working copy at
 `E:\Trabajos\crm\wacrm` (based on upstream `45e80ad`, uncommitted):
 `src/app/(dashboard)/orders`, `src/app/api/shopify`, `src/lib/shopify`,

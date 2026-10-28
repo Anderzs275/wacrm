@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -9,14 +9,19 @@ import { Header } from "@/components/layout/header";
 import { AccountAccessAlert } from "@/components/layout/account-access-alert";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 import { BrowserNotificationsListener } from "@/components/notifications/browser-notifications-listener";
+import { TEAM_ROLE_HOME, teamRoleCanVisit } from "@/lib/team/team-role";
 
 // Auth-gated dashboard shell. Extracted from the layout so the layout
 // itself can stay a server component and export metadata (noindex) —
 // client components can't export Next's metadata object.
 
 function DashboardShellInner({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, accountRole } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  // Fork: the team role only gets the Equipo page and personal settings.
+  const blockedForTeam =
+    accountRole === "team" && !teamRoleCanVisit(pathname);
   const t = useTranslations("DashboardShell");
 
   // Sidebar drawer state — only used on mobile. On lg+ the sidebar is
@@ -30,7 +35,11 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  useEffect(() => {
+    if (blockedForTeam) router.replace(TEAM_ROLE_HOME);
+  }, [blockedForTeam, router]);
+
+  if (loading || blockedForTeam) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">

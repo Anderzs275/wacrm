@@ -32,7 +32,8 @@ interface ProfileRow {
 
 export async function GET() {
   try {
-    const ctx = await getCurrentAccount();
+    // The team role needs the roster for the Equipo page.
+    const ctx = await getCurrentAccount({ allowTeamRole: true });
 
     // RLS on profiles allows reading any row whose account matches
     // the caller's, so this query is naturally account-scoped.

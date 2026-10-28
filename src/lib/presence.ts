@@ -93,11 +93,16 @@ export function formatLastSeen(
  *   "Online — active now"
  *   "Away — idle"
  *   "Offline — last seen 2 hours ago"
+ *
+ * Pass `showLastSeen: false` for viewers below admin: in this fork
+ * only admins see when a teammate was last connected, so everyone
+ * else gets a bare "Offline".
  */
 export function presenceLabel(
   status: PresenceStatus,
   lastSeenAt: string | null | undefined,
   now: number,
+  showLastSeen = true,
 ): string {
   switch (status) {
     case "online":
@@ -105,7 +110,9 @@ export function presenceLabel(
     case "away":
       return "Away — idle";
     case "offline":
-      return `Offline — last seen ${formatLastSeen(lastSeenAt, now)}`;
+      return showLastSeen
+        ? `Offline — last seen ${formatLastSeen(lastSeenAt, now)}`
+        : "Offline";
   }
 }
 

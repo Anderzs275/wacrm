@@ -23,6 +23,7 @@ import {
   resolveSection,
   type SettingsSection,
 } from '@/components/settings/settings-sections';
+import { TEAM_ROLE_SETTINGS } from '@/lib/team/team-role';
 
 // `useSearchParams` opts this page out of static prerendering unless it
 // sits under a Suspense boundary. Without one, the production build hits
@@ -43,7 +44,7 @@ export default function SettingsPage() {
 function SettingsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { defaultCurrency } = useAuth();
+  const { defaultCurrency, accountRole } = useAuth();
   const { mode } = useTheme();
   const t = useTranslations('Settings');
 
@@ -51,7 +52,11 @@ function SettingsPageInner() {
   // section — deep-linkable, and it keeps the existing links in the
   // app sidebar/header working. Legacy tab values (tags, custom-fields)
   // resolve onto their new home; unknown/empty → the Overview landing.
-  const section = resolveSection(searchParams.get('tab'));
+  const requested = resolveSection(searchParams.get('tab'));
+  // Fork: the team role only manages its own profile and appearance.
+  const teamOnly = accountRole === 'team';
+  const section =
+    teamOnly && !TEAM_ROLE_SETTINGS.includes(requested) ? 'profile' : requested;
 
   const go = (next: SettingsSection) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -97,7 +102,12 @@ function SettingsPageInner() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
-        <SettingsRail active={section} onSelect={go} hints={hints} />
+        <SettingsRail
+          active={section}
+          onSelect={go}
+          hints={hints}
+          only={teamOnly ? TEAM_ROLE_SETTINGS : undefined}
+        />
         <div className="min-w-0">{panel[section]}</div>
       </div>
     </div>

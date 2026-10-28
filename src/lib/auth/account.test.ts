@@ -173,4 +173,32 @@ describe("getCurrentAccount", () => {
       "Profile is not linked to an account",
     );
   });
+
+  // Fork: the team role (designers) must not reach customer data, so
+  // routes refuse it unless they opt in.
+  describe("team role", () => {
+    const teamClient = () =>
+      makeClient({
+        user: { id: "user-1" },
+        byTable: {
+          profiles: {
+            data: { account_id: "acct-1", account_role: "team" },
+            error: null,
+          },
+          accounts: { data: { id: "acct-1", name: "Acme" }, error: null },
+        },
+      }).client;
+
+    it("is refused by default", async () => {
+      createClient.mockReturnValue(teamClient());
+      await expect(getCurrentAccount()).rejects.toBeInstanceOf(ForbiddenError);
+    });
+
+    it("is let through when the route opts in", async () => {
+      createClient.mockReturnValue(teamClient());
+      await expect(
+        getCurrentAccount({ allowTeamRole: true }),
+      ).resolves.toMatchObject({ role: "team" });
+    });
+  });
 });

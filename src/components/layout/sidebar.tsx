@@ -25,6 +25,7 @@ import {
   Users,
   UsersRound,
   Workflow,
+  Handshake,
   X,
   Zap,
 } from "lucide-react";
@@ -66,6 +67,13 @@ const ROLE_CHIP: Record<
     className:
       "border-border bg-card text-muted-foreground",
   },
+  team: {
+    icon: Handshake,
+    labelKey: "roleTeam",
+    // Same quiet outline as viewer: the most restricted role.
+    className:
+      "border-border bg-card text-muted-foreground",
+  },
 };
 import {
   Avatar,
@@ -93,6 +101,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+  { href: "/team", labelKey: "team", icon: Handshake },
   { href: "/inbox", labelKey: "inbox", icon: MessageSquare },
   { href: "/notifications", labelKey: "notifications", icon: Bell },
   { href: "/contacts", labelKey: "contacts", icon: Users },
@@ -115,12 +124,18 @@ interface SidebarProps {
 }
 
 import { useTranslations } from "next-intl";
+import { teamRoleCanVisit } from "@/lib/team/team-role";
 
 export function Sidebar({ open = false, onClose }: SidebarProps) {
   const t = useTranslations("Sidebar");
   const pathname = usePathname();
   const { profile, profileLoading, account, accountRole, signOut } = useAuth();
   const totalUnread = useTotalUnread();
+  // Fork: the team role only gets the Equipo page (plus Settings below).
+  const visibleNavItems =
+    accountRole === "team"
+      ? navItems.filter((item) => teamRoleCanVisit(item.href))
+      : navItems;
   const unreadNotifications = useUnreadNotifications();
   // Only surface the account-name strip when it actually carries
   // information. A solo user's personal account is named after them
@@ -221,7 +236,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         {/* Main navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="flex flex-col gap-1">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));

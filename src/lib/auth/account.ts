@@ -29,7 +29,7 @@ import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/server";
-import { hasMinRole, isAccountRole, type AccountRole } from "./roles";
+import { hasMinRole, isAccountRole, isTeamOnly, type AccountRole } from "./roles";
 import { getT } from "@/lib/i18n/translate";
 
 const t = getT("LibErrors.auth");
@@ -106,7 +106,9 @@ export interface AccountContext {
  * Use `requireRole(min)` instead when the route also needs a
  * minimum-role check — it's a thin wrapper over this.
  */
-export async function getCurrentAccount(): Promise<AccountContext> {
+export async function getCurrentAccount(
+  options: { allowTeamRole?: boolean } = {},
+): Promise<AccountContext> {
   const supabase = await createClient();
 
   const {
@@ -164,6 +166,14 @@ export async function getCurrentAccount(): Promise<AccountContext> {
     // account_id points at no readable account row — orphaned profile
     // or an RLS gap. Same "can't scope this user" outcome as above.
     throw new ForbiddenError(t("notLinked"));
+  }
+
+  // Fork: the 'team' role (designers) must not reach customer data.
+  // RLS already refuses it on every account table, but some routes act
+  // through the service-role client after only this membership check,
+  // so refuse here too unless the route explicitly opts in.
+  if (isTeamOnly(data.account_role) && !options.allowTeamRole) {
+    throw new ForbiddenError(t("forbidden"));
   }
 
   return {

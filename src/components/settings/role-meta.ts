@@ -1,5 +1,6 @@
 import {
   Crown,
+  Handshake,
   Shield,
   UserCog,
   UserIcon,
@@ -46,6 +47,12 @@ export const ROLE_META: Record<
     variant: 'muted',
     // Outline-only so it stays quieter than the filled Agent chip in
     // both modes — bg-card would blend into a card surface in light mode.
+    className: 'border-border bg-transparent text-muted-foreground',
+  },
+  team: {
+    icon: Handshake,
+    label: 'team',
+    variant: 'muted',
     className: 'border-border bg-transparent text-muted-foreground',
   },
 };

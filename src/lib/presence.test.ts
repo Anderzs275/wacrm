@@ -72,6 +72,12 @@ describe("presenceLabel", () => {
       "Offline — last seen 2 hours ago",
     );
   });
+
+  it("drops the last-seen time when the viewer may not see it", () => {
+    expect(presenceLabel("offline", ago(2 * 60 * 60_000), NOW, false)).toBe(
+      "Offline",
+    );
+  });
 });
 
 describe("summarize", () => {

@@ -15,10 +15,13 @@
 // changes a one-file diff.
 // ============================================================
 
-export type AccountRole = "owner" | "admin" | "agent" | "viewer";
+// 'team' is a fork addition (migration 102/103): below viewer, it sees
+// only the Equipo page and personal settings — no customer data.
+export type AccountRole = "owner" | "admin" | "agent" | "viewer" | "team";
 
 /** Ordered list of every valid role, lowest privilege first. */
 export const ACCOUNT_ROLES: readonly AccountRole[] = [
+  "team",
   "viewer",
   "agent",
   "admin",
@@ -39,6 +42,8 @@ export function roleRank(role: AccountRole): number {
       return 2;
     case "viewer":
       return 1;
+    case "team":
+      return 0;
   }
 }
 
@@ -121,4 +126,13 @@ export function canDeleteAccount(role: AccountRole): boolean {
 /** Owner only: hand the account to another member. */
 export function canTransferOwnership(role: AccountRole): boolean {
   return role === "owner";
+}
+
+/**
+ * Team role (fork): may use the Equipo page and their own settings
+ * only. Every other screen redirects to /team, and `getCurrentAccount`
+ * refuses API calls from this role unless a route opts in.
+ */
+export function isTeamOnly(role: AccountRole): boolean {
+  return role === "team";
 }
