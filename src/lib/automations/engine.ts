@@ -20,6 +20,12 @@ import type {
 } from '@/types'
 import { supabaseAdmin } from './admin-client'
 import { addContactTagIfAbsent } from '@/lib/contacts/tag-write'
+import {
+  renderContactVars,
+  renderInteractivePayload,
+  toContactVars,
+  type ContactVars,
+} from '@/lib/messaging/contact-vars'
 import { MAX_TAG_CHAIN_DEPTH, getTagChainDepth } from '@/lib/contacts/tag-chain'
 import { engineSendText, engineSendTemplate, engineSendInteractive } from './meta-send'
 import { validateInteractivePayload } from '@/lib/whatsapp/interactive'
@@ -739,7 +745,8 @@ async function runStep(step: AutomationStep, args: ExecuteArgs): Promise<string>
     case 'send_message': {
       const cfg = step.step_config as SendMessageStepConfig
       if (!args.contactId) throw new Error(tErr('needsContact', { step: 'send_message' }))
-      const text = interpolate(cfg.text, args)
+      const contact = await loadContactVars(args.contactId)
+      const text = interpolate(renderContactVars(cfg.text, contact), args)
       if (!text.trim()) throw new Error(tErr('emptyText'))
       const conversationId = await resolveConversationId(args)
       const { whatsapp_message_id } = await engineSendText({
@@ -754,8 +761,16 @@ async function runStep(step: AutomationStep, args: ExecuteArgs): Promise<string>
 
     case 'send_buttons':
     case 'send_list': {
-      const payload = step.step_config as SendButtonsStepConfig | SendListStepConfig
+      const config = step.step_config as SendButtonsStepConfig | SendListStepConfig
       if (!args.contactId) throw new Error(tErr('needsContact', { step: step.step_type }))
+      // Fork: contact + run variables in every visible string; ids untouched.
+      const contact = await loadContactVars(args.contactId)
+      const payload = {
+        ...config,
+        ...renderInteractivePayload(config, (text) =>
+          interpolate(renderContactVars(text, contact), args),
+        ),
+      }
       // Validate against Meta's limits before the network call so a bad
       // payload surfaces as a clear failed-step detail rather than a raw
       // Meta 400 mid-conversation.
@@ -1167,6 +1182,20 @@ async function evaluateCondition(cfg: ConditionStepConfig, args: ExecuteArgs): P
 function waitMs(cfg: WaitStepConfig): number {
   const unitMs = cfg.unit === 'days' ? 86_400_000 : cfg.unit === 'hours' ? 3_600_000 : 60_000
   return Math.max(1_000, cfg.amount * unitMs)
+}
+
+/**
+ * Fork: the contact's name / phone for `{{nombre}}`-style tokens
+ * (src/lib/messaging/contact-vars.ts). Null when the contact is gone,
+ * which renders the tokens empty rather than failing the step.
+ */
+async function loadContactVars(contactId: string): Promise<ContactVars | null> {
+  const { data } = await supabaseAdmin()
+    .from('contacts')
+    .select('name, phone')
+    .eq('id', contactId)
+    .maybeSingle()
+  return toContactVars(data)
 }
 
 function interpolate(s: string, args: ExecuteArgs): string {

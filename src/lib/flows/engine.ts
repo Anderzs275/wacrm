@@ -34,6 +34,11 @@
 
 import { supabaseAdmin } from "./admin-client";
 import {
+  renderContactVars,
+  toContactVars,
+  type ContactVars,
+} from "@/lib/messaging/contact-vars";
+import {
   engineSendInteractiveButtons,
   engineSendInteractiveList,
   engineSendMedia,
@@ -424,17 +429,18 @@ async function sendButtonsAndSuspend(
   // Meta byte-for-byte as authored. Interpolation can push a title past
   // Meta's 20-char cap; meta-api's validator throws a descriptive error
   // and the caller logs it — we never truncate silently.
+  const contact = await loadContactVars(db, run.contact_id);
   const { whatsapp_message_id } = await engineSendInteractiveButtons({
     accountId: run.account_id,
     userId: run.user_id,
     conversationId: run.conversation_id!,
     contactId: run.contact_id!,
-    bodyText: interpolateVars(cfg.text, run.vars),
-    headerText: interpolateOptionalVars(cfg.header_text, run.vars),
-    footerText: interpolateOptionalVars(cfg.footer_text, run.vars),
+    bodyText: interpolateVars(cfg.text, run.vars, contact),
+    headerText: interpolateOptionalVars(cfg.header_text, run.vars, contact),
+    footerText: interpolateOptionalVars(cfg.footer_text, run.vars, contact),
     buttons: cfg.buttons.map((b) => ({
       id: b.reply_id,
-      title: interpolateVars(b.title, run.vars),
+      title: interpolateVars(b.title, run.vars, contact),
     })),
   });
   await logEvent(db, run.id, "message_sent", node.node_key, {
@@ -465,21 +471,22 @@ async function sendListAndSuspend(
   const cfg = node.config as unknown as SendListNodeConfig;
   // See sendButtonsAndSuspend — interpolate every visible string,
   // never the row `reply_id`.
+  const contact = await loadContactVars(db, run.contact_id);
   const { whatsapp_message_id } = await engineSendInteractiveList({
     accountId: run.account_id,
     userId: run.user_id,
     conversationId: run.conversation_id!,
     contactId: run.contact_id!,
-    bodyText: interpolateVars(cfg.text, run.vars),
-    buttonLabel: interpolateVars(cfg.button_label, run.vars),
-    headerText: interpolateOptionalVars(cfg.header_text, run.vars),
-    footerText: interpolateOptionalVars(cfg.footer_text, run.vars),
+    bodyText: interpolateVars(cfg.text, run.vars, contact),
+    buttonLabel: interpolateVars(cfg.button_label, run.vars, contact),
+    headerText: interpolateOptionalVars(cfg.header_text, run.vars, contact),
+    footerText: interpolateOptionalVars(cfg.footer_text, run.vars, contact),
     sections: cfg.sections.map((s) => ({
-      title: interpolateOptionalVars(s.title, run.vars),
+      title: interpolateOptionalVars(s.title, run.vars, contact),
       rows: s.rows.map((r) => ({
         id: r.reply_id,
-        title: interpolateVars(r.title, run.vars),
-        description: interpolateOptionalVars(r.description, run.vars),
+        title: interpolateVars(r.title, run.vars, contact),
+        description: interpolateOptionalVars(r.description, run.vars, contact),
       })),
     })),
   });
@@ -584,9 +591,14 @@ async function evaluateConditionNode(
  * ("Thanks {{vars.name}}, what's your email?"). Missing vars render as
  * empty string — the same behavior as the automations engine.
  */
-function interpolateVars(template: string, vars: Record<string, unknown>): string {
+function interpolateVars(
+  template: string,
+  vars: Record<string, unknown>,
+  contact: ContactVars | null = null,
+): string {
   if (!template) return "";
-  return template.replace(/\{\{vars\.([a-zA-Z0-9_]+)\}\}/g, (_, key) => {
+  // Fork: contact tokens first ({{nombre}} etc., src/lib/messaging/contact-vars.ts).
+  return renderContactVars(template, contact).replace(/\{\{vars\.([a-zA-Z0-9_]+)\}\}/g, (_, key) => {
     const v = vars[key];
     return v === undefined || v === null ? "" : String(v);
   });
@@ -603,10 +615,25 @@ function interpolateVars(template: string, vars: Record<string, unknown>): strin
 function interpolateOptionalVars(
   template: string | undefined,
   vars: Record<string, unknown>,
+  contact: ContactVars | null = null,
 ): string | undefined {
   return template === undefined || template === null
     ? undefined
-    : interpolateVars(template, vars);
+    : interpolateVars(template, vars, contact);
+}
+
+/** Fork: name / phone of the run's contact, or null if it is gone. */
+async function loadContactVars(
+  db: AdminClient,
+  contactId: string | null,
+): Promise<ContactVars | null> {
+  if (!contactId) return null;
+  const { data } = await db
+    .from("contacts")
+    .select("name, phone")
+    .eq("id", contactId)
+    .maybeSingle();
+  return toContactVars(data);
 }
 
 async function endRun(
@@ -641,6 +668,12 @@ async function advanceFromNodeKey(
   startNodeKey: string,
   nodes: Map<string, FlowNodeRow>,
 ): Promise<{ outcome: "advanced" | "completed" | "handed_off" }> {
+  // Fork: contact fields for {{nombre}}-style tokens, fetched on first use.
+  let contact: ContactVars | null | undefined;
+  const contactOnce = async () =>
+    contact === undefined
+      ? (contact = await loadContactVars(db, run.contact_id))
+      : contact;
   let currentKey: string | null = startNodeKey;
   for (let safety = 0; safety < MAX_NODES_PER_ADVANCE; safety += 1) {
     if (!currentKey) {
@@ -674,7 +707,7 @@ async function advanceFromNodeKey(
     userId: run.user_id,
           conversationId: run.conversation_id!,
           contactId: run.contact_id!,
-          text: interpolateVars(cfg.text, run.vars),
+          text: interpolateVars(cfg.text, run.vars, await contactOnce()),
         });
         await logEvent(db, run.id, "message_sent", node.node_key, {
           node_type: "send_message",
@@ -702,7 +735,7 @@ async function advanceFromNodeKey(
           kind: cfg.media_type,
           link: cfg.media_url,
           caption: cfg.caption
-            ? interpolateVars(cfg.caption, run.vars)
+            ? interpolateVars(cfg.caption, run.vars, await contactOnce())
             : undefined,
           filename: cfg.filename,
         });
@@ -732,7 +765,7 @@ async function advanceFromNodeKey(
     userId: run.user_id,
           conversationId: run.conversation_id!,
           contactId: run.contact_id!,
-          text: interpolateVars(cfg.prompt_text, run.vars),
+          text: interpolateVars(cfg.prompt_text, run.vars, await contactOnce()),
         });
         await logEvent(db, run.id, "message_sent", node.node_key, {
           node_type: "collect_input",
@@ -1175,7 +1208,7 @@ async function handleReplyForActiveRun(
           userId: run.user_id,
           conversationId: run.conversation_id!,
           contactId: run.contact_id!,
-          text: interpolateVars(cfg.prompt_text, run.vars),
+          text: interpolateVars(cfg.prompt_text, run.vars, await loadContactVars(db, run.contact_id)),
         });
       }
     } catch (err) {

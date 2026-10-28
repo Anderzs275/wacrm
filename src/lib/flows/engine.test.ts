@@ -19,6 +19,8 @@ const h = vi.hoisted(() => ({
     events: [] as Record<string, unknown>[],
     /** Every UPDATE, by table. */
     updates: [] as { table: string; row: Record<string, unknown> }[],
+    /** Rows the contact lookup for {{nombre}} sees (fork). */
+    contacts: [] as Record<string, unknown>[],
   },
   sendButtons: vi.fn<
     (
@@ -37,6 +39,7 @@ vi.mock("./admin-client", () => {
     if (table === "flow_runs") return h.state.activeRuns;
     if (table === "flows") return h.state.flows;
     if (table === "flow_nodes") return h.state.nodes;
+    if (table === "contacts") return h.state.contacts;
     return [];
   }
 
@@ -523,6 +526,7 @@ describe("send_buttons / send_list interpolate {{vars.*}} (#553)", () => {
     h.state.nodes = nodesEndingIn("choose");
     h.state.events = [];
     h.state.updates = [];
+    h.state.contacts = [];
   });
 
   it("send_buttons after collect_input renders body, header and button titles", async () => {
@@ -623,6 +627,64 @@ describe("send_buttons / send_list interpolate {{vars.*}} (#553)", () => {
           end_reason: "send_buttons_failed",
         }),
       }),
+    );
+  });
+});
+
+// ============================================================
+// Fork: contact variables ({{nombre}}, {{contact.name}}, …) render in
+// flows, so a welcome menu greets the customer by name.
+// ============================================================
+
+describe("contact variables in flow messages (fork)", () => {
+  beforeEach(() => {
+    h.state.activeRuns = [{ ...RUN, vars: {} }];
+    h.state.flows = [FLOW];
+    h.state.events = [];
+    h.state.updates = [];
+    h.sendList.mockClear();
+  });
+
+  function welcomeList() {
+    return [
+      {
+        id: "n1",
+        flow_id: "flow-1",
+        node_key: "ask_name",
+        node_type: "collect_input",
+        config: { prompt_text: "?", var_key: "x", next_node_key: "pick" },
+      },
+      {
+        ...LIST_NODE,
+        config: {
+          ...LIST_NODE.config,
+          text: "¡Hola, {{nombre}}! 👋 Elige una opción",
+          footer_text: "Para {{nombre_completo}}",
+        },
+      },
+      { id: "n9", flow_id: "flow-1", node_key: "done", node_type: "end", config: {} },
+    ];
+  }
+
+  it("greets the contact by first name", async () => {
+    h.state.nodes = welcomeList();
+    h.state.contacts = [{ name: "Carlos Polanco", phone: "51920155032" }];
+
+    await dispatch(text("hola"));
+
+    const args = h.sendList.mock.calls[0][0];
+    expect(args.bodyText).toBe("¡Hola, Carlos! 👋 Elige una opción");
+    expect(args.footerText).toBe("Para Carlos Polanco");
+  });
+
+  it("drops the greeting comma when the contact has no name", async () => {
+    h.state.nodes = welcomeList();
+    h.state.contacts = [{ name: null, phone: "51920155032" }];
+
+    await dispatch(text("hola"));
+
+    expect(h.sendList.mock.calls[0][0].bodyText).toBe(
+      "¡Hola! 👋 Elige una opción",
     );
   });
 });
