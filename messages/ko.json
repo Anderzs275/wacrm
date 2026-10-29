@@ -1241,6 +1241,7 @@
   },
   "Calendar": {
     "today": "오늘",
+    "todayHint": "이번 달로 돌아가기",
     "prevMonth": "이전 달",
     "nextMonth": "다음 달",
     "view": {
@@ -1307,6 +1308,7 @@
       "pending": "대기",
       "in_progress": "진행 중",
       "review": "검토 중",
+      "approved": "승인됨",
       "published": "게시됨"
     },
     "save": "저장",

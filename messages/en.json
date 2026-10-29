@@ -1241,6 +1241,7 @@
   },
   "Calendar": {
     "today": "Today",
+    "todayHint": "Back to the current month",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
     "view": {
@@ -1307,6 +1308,7 @@
       "pending": "Pending",
       "in_progress": "In progress",
       "review": "In review",
+      "approved": "Approved",
       "published": "Published"
     },
     "save": "Save",
