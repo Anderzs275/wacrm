@@ -81,6 +81,7 @@ const STATUS_ACCENT: Record<ContentStatus, string> = {
   pending: 'bg-muted-foreground',
   in_progress: 'bg-sky-500',
   review: 'bg-amber-500',
+  approved: 'bg-violet-500',
   published: 'bg-emerald-500',
 };
 

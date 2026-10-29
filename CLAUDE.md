@@ -103,7 +103,8 @@ the dot is derived from it. Code: `src/components/team/`,
 **Content calendar (on `/team`)** — replaces the marketing team's monthly
 Excel: one `content_posts` row per planned post (date, category, brand,
 format, product, idea, caption, status) plus `content_post_assignees`.
-Category/format/status are closed lists (CHECK in migration 104 +
+Category/format/status are closed lists (CHECK in migration 104, status
+redone in 109 to add `approved` +
 `src/lib/calendar/content-meta.ts`, change both); brands are a managed
 list (`content_brands`, admin adds them inline in the post form; seeded
 only into multi-member accounts so solo accounts stay mergeable).

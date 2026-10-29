@@ -175,6 +175,8 @@ export function CalendarCard({
           <Button
             size="sm"
             variant="outline"
+            title={t('todayHint')}
+            disabled={month.slice(0, 7) === today.slice(0, 7)}
             onClick={() => onMonthChange('today')}
           >
             {t('today')}
@@ -445,6 +447,7 @@ export function StatusMark({ status }: { status: ContentStatus }) {
       className={cn(
         'inline-block size-1.5 shrink-0 rounded-full',
         status === 'published' && 'bg-emerald-500',
+        status === 'approved' && 'bg-violet-500',
         status === 'review' && 'bg-amber-500',
         status === 'in_progress' && 'bg-sky-500',
         status === 'pending' && 'border-muted-foreground border'
