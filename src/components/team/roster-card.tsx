@@ -180,7 +180,7 @@ export function RosterCard({
                       className={cn(
                         'text-xs',
                         status === 'online'
-                          ? 'text-emerald-600 dark:text-emerald-400'
+                          ? 'text-emerald-400 light:text-emerald-600'
                           : 'text-muted-foreground'
                       )}
                     >

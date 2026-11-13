@@ -333,7 +333,7 @@ export function ListView({
                             p.publish_date === today
                               ? 'text-primary font-semibold'
                               : isOverdue(p, today)
-                                ? 'font-medium text-red-600 dark:text-red-400'
+                                ? 'font-medium text-red-400 light:text-red-600'
                                 : 'text-muted-foreground'
                           )}
                         >

@@ -151,7 +151,7 @@ export function CollabsTab({
                 {t(`kind.${c.kind}`)}
               </span>
               {c.amount !== null && (
-                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-medium text-emerald-700 dark:text-emerald-300">
+                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-medium text-emerald-300 light:text-emerald-700">
                   {money(c.amount)}
                 </span>
               )}
@@ -167,7 +167,7 @@ export function CollabsTab({
                   className={cn(
                     'flex items-center gap-1 text-xs',
                     c.publish_date < today && c.status !== 'published'
-                      ? 'font-semibold text-red-600 dark:text-red-400'
+                      ? 'font-semibold text-red-400 light:text-red-600'
                       : 'text-muted-foreground'
                   )}
                 >

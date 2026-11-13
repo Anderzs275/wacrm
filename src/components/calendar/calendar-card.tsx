@@ -310,7 +310,7 @@ export function CalendarCard({
                             : !isCurrent
                               ? 'text-muted-foreground/60'
                               : isHoliday
-                                ? 'text-red-600 dark:text-red-400'
+                                ? 'text-red-400 light:text-red-600'
                                 : 'text-foreground'
                         )}
                       >
@@ -332,7 +332,7 @@ export function CalendarCard({
                             'flex h-6 shrink-0 items-center gap-1 truncate rounded px-1.5 text-left text-xs font-semibold',
                             m.kind === 'launch'
                               ? 'bg-orange-500 text-white'
-                              : 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-200'
+                              : 'bg-emerald-500/20 text-emerald-200 light:text-emerald-800'
                           )}
                         >
                           {m.kind === 'launch' ? (
@@ -558,7 +558,7 @@ function EventChip({
           ? 'bg-orange-500 text-white'
           : ev.kind === 'meeting'
             ? 'bg-primary/10 text-primary'
-            : 'bg-violet-500/20 text-violet-800 dark:text-violet-200',
+            : 'bg-violet-500/20 text-violet-200 light:text-violet-800',
         isSpan ? cn(!isStart && '-ml-1.5', !isEnd && '-mr-1.5') : 'rounded',
         isSpan && isStart && 'rounded-l',
         isSpan && isEnd && 'rounded-r'

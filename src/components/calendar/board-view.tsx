@@ -104,7 +104,7 @@ export function BoardView({
                 p.publish_date === today
                   ? 'text-primary font-semibold'
                   : isOverdue(p, today)
-                    ? 'font-semibold text-red-600 dark:text-red-400'
+                    ? 'font-semibold text-red-400 light:text-red-600'
                     : 'text-muted-foreground'
               )}
             >

@@ -58,13 +58,13 @@ export const CATEGORY_DOT_CLASS: Record<ContentCategory, string> = {
 
 export const STATUS_BADGE_CLASS: Record<ContentStatus, string> = {
   pending: 'border-border bg-muted text-muted-foreground',
-  in_progress: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+  in_progress: 'border-sky-500/30 bg-sky-500/10 text-sky-300 light:text-sky-700',
   review:
-    'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    'border-amber-500/30 bg-amber-500/10 text-amber-300 light:text-amber-700',
   approved:
-    'border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300',
+    'border-violet-500/30 bg-violet-500/10 text-violet-300 light:text-violet-700',
   published:
-    'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    'border-emerald-500/30 bg-emerald-500/10 text-emerald-300 light:text-emerald-700',
 };
 
 function oneOf<T extends string>(list: readonly T[], fallback: T) {

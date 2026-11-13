@@ -25,16 +25,16 @@ export function toTeamColor(value: unknown): TeamColor {
 
 /** Chip classes per colour: tinted background, readable in both themes. */
 export const TEAM_CHIP_CLASS: Record<TeamColor, string> = {
-  ocean: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+  ocean: 'border-sky-500/30 bg-sky-500/10 text-sky-300 light:text-sky-700',
   emerald:
-    'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    'border-emerald-500/30 bg-emerald-500/10 text-emerald-300 light:text-emerald-700',
   amber:
-    'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  rose: 'border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+    'border-amber-500/30 bg-amber-500/10 text-amber-300 light:text-amber-700',
+  rose: 'border-rose-500/30 bg-rose-500/10 text-rose-300 light:text-rose-700',
   violet:
-    'border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300',
+    'border-violet-500/30 bg-violet-500/10 text-violet-300 light:text-violet-700',
   slate:
-    'border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300',
+    'border-slate-500/30 bg-slate-500/10 text-slate-300 light:text-slate-700',
 };
 
 /** Solid swatch for the colour picker. */

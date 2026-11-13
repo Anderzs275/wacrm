@@ -209,7 +209,7 @@ export function TodayCard({
       <CardContent className="max-h-[28rem] space-y-4 overflow-y-auto">
         {overdue.length > 0 && (
           <section>
-            <h3 className="mb-1 px-2 text-xs font-semibold text-red-600 uppercase dark:text-red-400">
+            <h3 className="mb-1 px-2 text-xs font-semibold text-red-400 uppercase light:text-red-600">
               {t('overdue')}
             </h3>
             <ul>{overdue.map(postRow)}</ul>

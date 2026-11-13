@@ -144,7 +144,7 @@ export function CollectionsTab({
                   className={cn(
                     'mt-1.5 flex items-center gap-1 text-xs',
                     launchPast
-                      ? 'font-semibold text-red-600 dark:text-red-400'
+                      ? 'font-semibold text-red-400 light:text-red-600'
                       : 'text-muted-foreground'
                   )}
                 >
@@ -165,7 +165,7 @@ export function CollectionsTab({
                       total: c.tasks.length,
                     })}
                     {lateTasks > 0 && (
-                      <span className="ml-auto font-medium text-red-600 dark:text-red-400">
+                      <span className="ml-auto font-medium text-red-400 light:text-red-600">
                         {t('tasks.late', { n: lateTasks })}
                       </span>
                     )}
